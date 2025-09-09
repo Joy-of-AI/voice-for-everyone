@@ -398,47 +398,85 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🧭 Visual Architecture (High‑Level)
 
-```mermaid
-flowchart LR
-  subgraph Client[Client (Web)]
-    UI[React + MUI]
-    ThreeJS[Three.js VRM/SMPL‑X Avatar]
-    STT[TTS/STT UI]
-  end
-
-  subgraph RTC[Realtime Transport]
-    WebRTC[WebRTC (LiveKit)]
-  end
-
-  subgraph Backend[FastAPI Backend]
-    Planner[GPT‑OSS‑120B Planner\n(ai_translator.py)]
-    Pose[Pose/Hands/Face\nMoveNet + MediaPipe]
-    ASL[Sign Integrations\nWLASL + How2Sign + SiGML]
-    ONNX[ONNX Runtime / Triton]
-    Avatar[SMPL‑X / Export glTF]
-    DB[(SQLite + ChromaDB)]
-  end
-
-  UI <--> WebRTC
-  UI <---> |REST / WS| Backend
-  ThreeJS <--> UI
-
-  Backend <--> Planner
-  Backend <--> Pose
-  Backend <--> ASL
-  Backend <--> ONNX
-  Backend <--> Avatar
-  Backend <--> DB
-
-  Pose -.-> Planner
-  ASL -.-> Planner
+### System Overview
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                            │
+├─────────────────────────────────────────────────────────────────┤
+│  React + Material-UI  │  Three.js Avatar  │  TTS/STT Interface  │
+│  (Frontend UI)       │  (3D Rendering)   │  (Audio I/O)       │
+└─────────────────────────────────────────────────────────────────┘
+                                ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                    REALTIME TRANSPORT                          │
+├─────────────────────────────────────────────────────────────────┤
+│              WebRTC (LiveKit) + WebSocket                       │
+│              (Multi-party A/V + Pose Streaming)                │
+└─────────────────────────────────────────────────────────────────┘
+                                ↕
+┌─────────────────────────────────────────────────────────────────┐
+│                      BACKEND SERVICES                          │
+├─────────────────────────────────────────────────────────────────┤
+│  🧠 GPT-OSS-120B    │  📹 Pose Detection  │  🤟 Sign Language  │
+│  (AI Planner)       │  (MoveNet+MediaPipe)│  (WLASL+How2Sign)  │
+│                     │                     │                    │
+│  ⚡ ONNX Runtime    │  🎭 SMPL-X Avatar   │  💾 Data Storage   │
+│  (Inference Server) │  (3D Mesh Export)   │  (SQLite+ChromaDB) │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-```text
-Data flow (typical text → sign):
-1) UI sends text → Backend
-2) Backend calls GPT‑OSS‑120B planner → gesture/sign sequence with prosody
-3) Backend enriches with ASL integrations (WLASL/How2Sign/SiGML)
-4) Avatar engine (SMPL‑X/VRM) renders → Three.js on the client
-5) Optional RTC: WebRTC (LiveKit) for live multi‑party A/V + pose streaming
+### Data Flow (Text → Sign Animation)
+```
+1. User Input: "Hello, how are you?"
+   ↓
+2. GPT-OSS-120B Planner: Converts to gesture sequence
+   ↓
+3. ASL Integration: Enriches with WLASL/How2Sign data
+   ↓
+4. Avatar Engine: Generates SMPL-X 3D animation
+   ↓
+5. Frontend: Renders in Three.js with professional lighting
+   ↓
+6. Output: Smooth 3D avatar performing sign language
+```
+
+### GPT-OSS-120B Integration Points
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    GPT-OSS-120B PLANNER                        │
+│                    (ai_translator.py)                          │
+├─────────────────────────────────────────────────────────────────┤
+│  text_to_body_language()     │  body_language_to_text()        │
+│  • Input: "let's swim"       │  • Input: Pose landmarks        │
+│  • Output: Gesture sequence  │  • Output: "Swimming motion"   │
+│                              │                                 │
+│  enhance_translation_with_   │  get_gesture_suggestions()      │
+│  context()                   │  • Input: Partial text          │
+│  • Input: Translation +      │  • Output: Live suggestions   │
+│    conversation history      │                                 │
+│  • Output: Refined text      │                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Technology Stack Visualization
+```
+Frontend (React + TypeScript)
+├── Material-UI Components
+├── Three.js 3D Rendering
+├── WebRTC Client
+└── WebSocket Client
+
+Backend (FastAPI + Python)
+├── 🧠 GPT-OSS-120B (AI Planner)
+├── 📹 MoveNet (Ultra-low latency pose)
+├── 🤟 MediaPipe Holistic (Hands+Face)
+├── 🎭 SMPL-X Avatar Engine
+├── ⚡ ONNX Runtime + Triton
+├── 💾 SQLite + ChromaDB
+└── 🌐 WebRTC + WebSocket
+
+Real-time Transport
+├── LiveKit SFU
+├── Data Channels
+└── Pose Streaming
 ```
