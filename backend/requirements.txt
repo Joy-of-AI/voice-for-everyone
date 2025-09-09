@@ -1,0 +1,37 @@
+# FastAPI and Web Framework
+fastapi==0.116.1
+uvicorn==0.35.0
+python-multipart==0.0.6
+starlette==0.47.2
+
+# AI and Machine Learning
+openai==1.97.0
+numpy==2.3.1
+scikit-learn==1.7.1
+torch==2.7.1
+transformers==4.53.2
+accelerate==0.27.2
+bitsandbytes==0.42.0
+
+# Computer Vision and Body Language Processing
+# opencv-python-headless==4.8.1.78  # Commented out due to NumPy compatibility issues
+
+# Database
+sqlalchemy==2.0.23
+chromadb==1.0.15
+
+# Utilities and Data Processing
+pandas==2.3.1
+python-dotenv==1.1.1
+pydantic==2.11.7
+websockets==15.0.1
+aiofiles==24.1.0
+pillow==11.3.0
+requests==2.32.4
+
+# Testing
+pytest==8.4.1
+httpx==0.28.1
+
+# CORS and Security
+passlib==1.7.4
