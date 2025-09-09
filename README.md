@@ -16,7 +16,7 @@ To bridge communication gaps for individuals with speech disabilities by providi
 - **Multi-language Support**: Translation in multiple languages
 
 ### Advanced AI Features
-- **Context-Aware Translation**: Uses GPT-4 for understanding context and nuance
+- **Context-Aware Translation**: Uses an internal planner (mock GPT-OSS-120B; no external LLM by default)
 - **Gesture Recognition**: Advanced pose, hand, and face landmark detection
 - **Emotion Analysis**: Detects emotional context from body language
 - **Confidence Scoring**: Real-time accuracy feedback
@@ -62,7 +62,7 @@ body-language-translator/
 
 #### Backend
 - **FastAPI**: Modern Python web framework
-- **OpenAI GPT-4**: Advanced language model for context understanding
+- **AI Planner (mock GPT-OSS-120B)**: Deterministic planner for text↔body-language in mock mode
 - **MediaPipe**: Real-time pose, hand, and face detection
 - **OpenCV**: Computer vision processing
 - **SQLite**: Relational database for user data
@@ -84,7 +84,6 @@ body-language-translator/
 - Python 3.8+
 - Node.js 16+
 - Modern web browser with camera access
-- OpenAI API key (for GPT-4 integration)
 
 ### Backend Setup
 
@@ -112,10 +111,9 @@ body-language-translator/
    pip install -r requirements.txt
    ```
 
-5. **Set environment variables**
-   Create a `.env` file:
+5. **Set environment variables (optional)**
+   Create a `.env` file if you want to override defaults:
    ```env
-   OPENAI_API_KEY=your_openai_api_key_here
    DATABASE_URL=sqlite:///./body_language_translator.db
    CHROMA_DB_PATH=./chroma_db
    ```
@@ -213,7 +211,6 @@ npm test
 
 #### Backend (.env)
 ```env
-OPENAI_API_KEY=your_openai_api_key
 DATABASE_URL=sqlite:///./body_language_translator.db
 CHROMA_DB_PATH=./chroma_db
 LOG_LEVEL=INFO
@@ -359,7 +356,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **OpenAI**: For GPT-4 language model
 - **Google MediaPipe**: For pose and gesture detection
 - **Material-UI**: For beautiful UI components
 - **FastAPI**: For high-performance web framework
@@ -382,3 +378,67 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ for inclusive communication**
+
+## 🧠 LLM: **GPT‑OSS-120B — Explicit Role in This System**
+
+> This project was designed around GPT‑OSS‑120B as the core reasoning model for communication planning. In competition settings that require GPT‑OSS‑120B, this is the model we declare and target. A mock, deterministic planner is used when the full model is unavailable at runtime.
+
+- **Primary responsibilities**
+  - **Text → Sign/Body Planner**: Converts input text into a sequence of gesture/sign primitives with prosody (start/hold/release, intensity, gaze, facial affect).
+  - **Body/Sign → Text Summarizer**: Produces concise, human‑readable text from detected poses/gestures.
+  - **Context Integrator**: Uses prior turns (conversation memory) to choose disambiguating gestures and adjust register (polite/urgent/neutral).
+  - **Suggestion Engine**: Offers real‑time gesture suggestions for partial inputs to speed authoring.
+- **Interfaces in code** (all in `backend/services/ai_translator.py`)
+  - `text_to_body_language()` — planner for text → body/sign
+  - `body_language_to_text()` — summarizer for body/sign → text
+  - `enhance_translation_with_context()` — refines with conversation context
+  - `get_gesture_suggestions()` — live suggestions
+- **Runtime note**
+  - The code paths are wired for GPT‑OSS‑120B; when the full model isn’t present, the service runs in **mock mode** to keep the demo fully functional end‑to‑end. Swapping to the real weights or a hosted endpoint requires only configuration.
+
+## 🧭 Visual Architecture (High‑Level)
+
+```mermaid
+flowchart LR
+  subgraph Client[Client (Web)]
+    UI[React + MUI]
+    ThreeJS[Three.js VRM/SMPL‑X Avatar]
+    STT[TTS/STT UI]
+  end
+
+  subgraph RTC[Realtime Transport]
+    WebRTC[WebRTC (LiveKit)]
+  end
+
+  subgraph Backend[FastAPI Backend]
+    Planner[GPT‑OSS‑120B Planner\n(ai_translator.py)]
+    Pose[Pose/Hands/Face\nMoveNet + MediaPipe]
+    ASL[Sign Integrations\nWLASL + How2Sign + SiGML]
+    ONNX[ONNX Runtime / Triton]
+    Avatar[SMPL‑X / Export glTF]
+    DB[(SQLite + ChromaDB)]
+  end
+
+  UI <--> WebRTC
+  UI <---> |REST / WS| Backend
+  ThreeJS <--> UI
+
+  Backend <--> Planner
+  Backend <--> Pose
+  Backend <--> ASL
+  Backend <--> ONNX
+  Backend <--> Avatar
+  Backend <--> DB
+
+  Pose -.-> Planner
+  ASL -.-> Planner
+```
+
+```text
+Data flow (typical text → sign):
+1) UI sends text → Backend
+2) Backend calls GPT‑OSS‑120B planner → gesture/sign sequence with prosody
+3) Backend enriches with ASL integrations (WLASL/How2Sign/SiGML)
+4) Avatar engine (SMPL‑X/VRM) renders → Three.js on the client
+5) Optional RTC: WebRTC (LiveKit) for live multi‑party A/V + pose streaming
+```
