@@ -332,24 +332,6 @@ REACT_APP_ENVIRONMENT=development
 - [ ] Enterprise features
 - [ ] Global deployment
 
-## 🆘 Support
-
-### Documentation
-- **Backend README**: Detailed backend documentation
-- **Frontend README**: Frontend-specific guide
-- **API Documentation**: Interactive API docs at `/docs`
-- **Code Comments**: Comprehensive inline documentation
-
-### Community
-- **GitHub Issues**: Report bugs and request features
-- **Discussions**: Community support and ideas
-- **Wiki**: Extended documentation and tutorials
-
-### Contact
-- **Email**: support@bodylanguagetranslator.com
-- **Discord**: Join our community server
-- **Twitter**: Follow for updates
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
