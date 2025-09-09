@@ -2,7 +2,7 @@
 
 A comprehensive application for real-time body language translation, designed to help communication-disabled individuals express themselves through technology. This project includes both frontend and backend components, leveraging GPT-OSS-120b for context-aware translation.
 
-**Made with ❤️ for inclusive communication**
+**Made with ❤️ for inclusive communication.**
 
 ## 🎯 Mission
 
